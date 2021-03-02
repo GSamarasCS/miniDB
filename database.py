@@ -6,6 +6,7 @@ import os
 from btree import Btree
 import shutil
 from misc import split_condition
+from Privileges import privileges
 
 class Database:
     '''
@@ -25,6 +26,10 @@ class Database:
                 return
             except:
                 print(f'"{name}" db does not exist, creating new.')
+        answer = privileges("'create Database'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
 
         # create dbdata directory if it doesnt exist
         if not os.path.exists('dbdata'):
@@ -76,6 +81,10 @@ class Database:
             setattr(self, name, self.tables[name])
 
     def drop_db(self):
+        answer = privileges("'drop database'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         shutil.rmtree(self.savedir)
 
     #### IO ####
@@ -96,6 +105,11 @@ class Database:
         or
         db_object.table_name
         '''
+        if name != "meta_length" and name != "meta_locks" and name != "meta_insert_stack" and name != "meta_indexes" :
+            answer = privileges("'create table'")
+            if answer == '2':
+                print("You need Admin privileges to run this method.")
+                return
         self.tables.update({name: Table(name=name, column_names=column_names, column_types=column_types, primary_key=primary_key, load=load)})
         # self._name = Table(name=name, column_names=column_names, column_types=column_types, load=load)
         # check that new dynamic var doesnt exist already
@@ -113,6 +127,10 @@ class Database:
         '''
         Drop table with name 'table_name' from current db
         '''
+        answer = privileges("'drop table'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         self.load(self.savedir)
         if self.is_locked(table_name):
             return
@@ -137,6 +155,10 @@ class Database:
         If name is not specified, filename's name is used
         If column types are not specified, all are regarded to be of type str
         '''
+        answer = privileges("'table from csv'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         if name is None:
             name=filename.split('.')[:-1][0]
 
@@ -175,7 +197,10 @@ class Database:
         '''
         Add table obj to database.
         '''
-
+        answer = privileges("'table from object'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         self.tables.update({new_table._name: new_table})
         if new_table._name not in self.__dir__():
             setattr(self, new_table._name, new_table)
@@ -205,6 +230,10 @@ class Database:
         column_name -> the column that will be casted (needs to exist in table)
         cast_type -> needs to be a python type like str int etc. NOT in ''
         '''
+        answer = privileges("'cast column'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         self.load(self.savedir)
         if self.is_locked(table_name):
             return
@@ -222,6 +251,10 @@ class Database:
         row -> a list of the values that are going to be inserted (will be automatically casted to predifined type)
         lock_load_save -> If false, user need to load, lock and save the states of the database (CAUTION). Usefull for bulk loading
         '''
+        answer = privileges("'insert'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         if lock_load_save:
             self.load(self.savedir)
             if self.is_locked(table_name):
@@ -256,6 +289,10 @@ class Database:
 
                     operatores supported -> (<,<=,==,>=,>)
         '''
+        answer = privileges("'update'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         self.load(self.savedir)
         if self.is_locked(table_name):
             return
@@ -276,6 +313,10 @@ class Database:
 
                     operatores supported -> (<,<=,==,>=,>)
         '''
+        answer = privileges("'delete'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         self.load(self.savedir)
         if self.is_locked(table_name):
             return
@@ -349,7 +390,10 @@ class Database:
         column_name -> the column that will be used to sort
         asc -> If True sort will return results using an ascending order. Def: False
         '''
-
+        answer = privileges("'sort'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         self.load(self.savedir)
         if self.is_locked(table_name):
             return
@@ -372,6 +416,10 @@ class Database:
         save_as -> The name that will be used to save the resulting table in the database. Def: None (no save)
         return_object -> If true, the result will be a table object (usefull for internal usage). Def: False (the result will be printed)
         '''
+        answer = privileges("'inner join'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         self.load(self.savedir)
         if self.is_locked(left_table_name) or self.is_locked(right_table_name):
             print(f'Table/Tables are currently locked')
@@ -516,6 +564,10 @@ class Database:
         table_name -> table's name (needs to exist in database)
         index_name -> name of the created index
         '''
+        answer = privileges("'create index'")
+        if answer == '2':
+            print("You need Admin privileges to run this method.")
+            return
         if self.tables[table_name].pk_idx is None: # if no primary key, no index
             print('## ERROR - Cant create index. Table has no primary key.')
             return
